@@ -1,27 +1,65 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProductController;
+use App\Models\Produk;
+use App\Models\Kategori;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| PRODUCT CRUD (ADMIN / INTERNAL)
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
+*/
+Route::resource('products', ProductController::class);
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC PAGES
+|--------------------------------------------------------------------------
 */
 
+// Home
 Route::get('/', function () {
-    return view('welcome');
+    $menus = Produk::with('kategori')->take(3)->get();
+    return view('home', compact('menus'));
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Produk publik
+Route::get('/produk', function () {
+    $title = 'Menu Ayam Crispy';
+    $produk = Produk::with('kategori')->get();
+    return view('produk', compact('title', 'produk'));
+})->name('produk');
 
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('contact');
+})->name('contact');
+
+/*
+|--------------------------------------------------------------------------
+| AUTH DASHBOARD
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    Route::get('/pesan', function () {
+        return view('pesan');
+    })->name('pesan');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE (BREEZE)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
